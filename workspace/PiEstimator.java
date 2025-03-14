@@ -17,7 +17,6 @@ public class PiEstimator{
 //may implement additional functions if you feel it necessary.
 static Double pi=0.0;
 static int n=0;
-int trials;
 public static class PIThread extends Thread {
 	Double pi=0.0;
 	int n;
@@ -28,10 +27,14 @@ public static class PIThread extends Thread {
 	}
 	public void run() {
 		System.out.println("thread started");
+		running=true;
+		while(true){	
 		while (!running) {
 			try {
-			System.out.println("Paused!");
+			System.out.println("Paused");
+			synchronized(this){
 			wait();
+			}
 			} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			System.out.println("error caught");
@@ -55,12 +58,12 @@ public static class PIThread extends Thread {
 		}
 		}
 		pi=(4*c)/n;
-		System.out.println("PI is estimated as"+pi);
+		//System.out.println("PI is estimated as"+pi);
 		send(pi);
 		c=0;
-		n+=1000;
+		n+=1000000;
 		}
-		System.out.println("while loop ended");
+	}
 		}
 		
 	}
@@ -71,7 +74,7 @@ public static class PIThread extends Thread {
 
 public static synchronized void send(Double piestimate){
 
-		PiEstimator.n++;
+	PiEstimator.n++;
 
 	if(pi==0){
 		pi=piestimate;
@@ -83,7 +86,7 @@ public static synchronized void send(Double piestimate){
 public static void main(String[] args) {  
 	    JFrame f=new JFrame("Button Example");  
 	    JButton b=new JButton("run/pause button");  
-	    JLabel example = new JLabel(Double.toString(Math.PI));
+	    JLabel example = new JLabel("Actual value of pi: " + Double.toString(Math.PI));
 		JLabel estimate = new JLabel("pi estimate:");
 		JLabel trialsDisplay = new JLabel("Nubmer of trials:");
 
@@ -156,8 +159,10 @@ public static void main(String[] args) {
 		System.out.println("pi: "+pi);
 
 		while(true){
+			synchronized(thread){
 			estimate.setText("pi estimate:"+ pi.toString());
 			trialsDisplay.setText("number of trials: "+n);
+			}
 			f.revalidate();
 			f.repaint();
 		}
