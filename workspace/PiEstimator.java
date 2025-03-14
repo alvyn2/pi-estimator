@@ -8,23 +8,27 @@ import java.awt.event.MouseListener;
 /*
  * AUthor:Julius
  * 
- * estimates pi with threads
+ * estimates pi with one pausable thread
  * 
 */
 public class PiEstimator{
-//the following code is just to jog your memory about how labels and buttons work!
-//implement your Pi Estimator as described in the project. You may do it all in main below or you 
-//may implement additional functions if you feel it necessary.
-static Double pi=0.0;
-static int n=0;
+
+static Double pi=0.0;// the estimated value of pi
+static int n=0;// the number of trials 
+
 public static class PIThread extends Thread {
-	Double pi=0.0;
-	int n;
+	Double pi=0.0;// value of pi estimated by this thread
+	int n=100000;// number of points to be generated to calculate pi
 	volatile boolean running=true;
-	double c=0.0;// c for count double so pi is a double not an int when it is calculated
+	double c=0.0;// c for count
+	//its a double so pi is a double not an int when it is calculated
+	
+	//constructor specifying the number of points to generate
 	public PIThread(int n) {
 	this.n=n;
 	}
+	// run method estimating pi and repeating endlessly unless the program is ended 
+	//also can be paused and resumed
 	public void run() {
 		System.out.println("thread started");
 		running=true;
@@ -49,7 +53,6 @@ public static class PIThread extends Thread {
 		//System.out.println("y"+y);
 		double r=x*x+y*y;
 		//System.out.println("r"+r);
-		// need to make random actually include one somehow
 		if((r)<=1){
 			c++;
 		}else{
@@ -57,11 +60,11 @@ public static class PIThread extends Thread {
 			//do nothing
 		}
 		}
-		pi=(4*c)/n;
+		pi=(4*c)/n;//estimates pi
 		//System.out.println("PI is estimated as"+pi);
 		send(pi);
 		c=0;
-		n+=1000000;
+		n+=100000;// more points to make it more accurate over time
 		}
 	}
 		}
@@ -71,7 +74,8 @@ public static class PIThread extends Thread {
 
 
 
-
+// updates the global variable pi with a new estimate
+//also increments the number of trials to keep the display accurate
 public static synchronized void send(Double piestimate){
 
 	PiEstimator.n++;
@@ -83,7 +87,11 @@ public static synchronized void send(Double piestimate){
 	}
 }
 
+
+
+//main method
 public static void main(String[] args) {  
+		// creates display on screen
 	    JFrame f=new JFrame("Button Example");  
 	    JButton b=new JButton("run/pause button");  
 	    JLabel example = new JLabel("Actual value of pi: " + Double.toString(Math.PI));
@@ -98,11 +106,11 @@ public static void main(String[] args) {
 	    f.setLayout(new GridLayout(4, 1));  
 	    f.setVisible(true);   
 
-		
+		// creates and starrts thread to estimate pi
 		PIThread thread=new PIThread(800000);
 		thread.start();
 		
-//mouseLIstener to make the button work
+//mouseLIstener to make the button pause 
 		b.addMouseListener(new MouseListener() {
 
 
@@ -111,21 +119,21 @@ public static void main(String[] args) {
 
 			}
 			public void mouseReleased(MouseEvent m){
-
+				// do nothing
 			 }
-			//pauses and unpauses the thread estimating pi
+			//pauses and unpauses the thread 
 			 public void mouseClicked(MouseEvent m){
 
 				//PIThread thread = new PIThread(PiEstimator.n+1000000);
 				
 				if(thread.running){
 					thread.running=false;
-					System.out.println("paused running");
+					//System.out.println("paused running");
 				}else{
 					synchronized(thread){
 						thread.running=true;
 						thread.notify();
-						System.out.println("restarted running");
+						//System.out.println("restarted running");
 						//thread.start();
 					}
 				}
@@ -141,11 +149,11 @@ public static void main(String[] args) {
 		estimate.setText("pi estimate:"+ pi.toString());
 		}// end mouseClicked
 			public void mousePressed(MouseEvent m){
-// do nothing
+			// do nothing
 			 }
 			 //also updates screen
 			public void mouseEntered(MouseEvent m){
-				// update
+				// updates the screen
 				estimate.setText("pi estimate:"+ pi.toString());
 				trialsDisplay.setText("number of trials: "+n);
 			}
@@ -154,10 +162,10 @@ public static void main(String[] args) {
 
 
 		}
-
 		);
 		System.out.println("pi: "+pi);
 
+		//constantly updates the screen
 		while(true){
 			synchronized(thread){
 			estimate.setText("pi estimate:"+ pi.toString());
